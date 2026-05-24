@@ -37,7 +37,7 @@ const W = canvas.width;
 const H = canvas.height;
 const photoArea = { x: 0, y: 0, w: W, h: 900 };
 const captionArea = { x: 115, y: 850, w: 770, h: 220 };
-const captionFont = '"Geist Mono", ui-monospace, SFMono-Regular, Consolas, monospace';
+const captionFont = '"Bebas Neue", sans-serif';
 const captionWhite = "#f7f7f7";
 const logoGreen = "#05f439";
 
