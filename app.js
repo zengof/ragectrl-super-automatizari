@@ -10,6 +10,11 @@ const lineHeightInput = document.querySelector("#lineHeightInput");
 const zoomInput = document.querySelector("#zoomInput");
 const offsetXInput = document.querySelector("#offsetXInput");
 const offsetYInput = document.querySelector("#offsetYInput");
+const offsetX2Input = document.querySelector("#offsetX2Input");
+const offsetY2Input = document.querySelector("#offsetY2Input");
+const blendStartInput = document.querySelector("#blendStartInput");
+const blendEndInput = document.querySelector("#blendEndInput");
+const blendStrengthInput = document.querySelector("#blendStrengthInput");
 const monoInput = document.querySelector("#monoInput");
 const markdownInput = document.querySelector("#markdownInput");
 const manualLinesInput = document.querySelector("#manualLinesInput");
@@ -31,6 +36,11 @@ const state = {
   zoom: Number(zoomInput.value),
   offsetX: Number(offsetXInput.value),
   offsetY: Number(offsetYInput.value),
+  offsetX2: Number(offsetX2Input.value),
+  offsetY2: Number(offsetY2Input.value),
+  blendStart: Number(blendStartInput.value),
+  blendEnd: Number(blendEndInput.value),
+  blendStrength: Number(blendStrengthInput.value),
   mono: monoInput.checked,
   markdown: markdownInput.checked,
   manualLines: manualLinesInput.checked,
@@ -304,6 +314,11 @@ function updateFromControls() {
   state.zoom = Number(zoomInput.value);
   state.offsetX = Number(offsetXInput.value);
   state.offsetY = Number(offsetYInput.value);
+  state.offsetX2 = Number(offsetX2Input.value);
+  state.offsetY2 = Number(offsetY2Input.value);
+  state.blendStart = Number(blendStartInput.value);
+  state.blendEnd = Number(blendEndInput.value);
+  state.blendStrength = Number(blendStrengthInput.value);
   state.mono = monoInput.checked;
   state.markdown = markdownInput.checked;
   state.manualLines = manualLinesInput.checked;
@@ -317,6 +332,11 @@ function resetAdjustments() {
   zoomInput.value = "1";
   offsetXInput.value = "0";
   offsetYInput.value = "0";
+  offsetX2Input.value = "0";
+  offsetY2Input.value = "0";
+  blendStartInput.value = "35";
+  blendEndInput.value = "65";
+  blendStrengthInput.value = "100";
   updateFromControls();
 }
 
@@ -330,6 +350,11 @@ function resetSingleControl(controlId) {
     zoomInput: "1",
     offsetXInput: "0",
     offsetYInput: "0",
+    offsetX2Input: "0",
+    offsetY2Input: "0",
+    blendStartInput: "35",
+    blendEndInput: "65",
+    blendStrengthInput: "100",
   };
   control.value = defaults[controlId] || "0";
   updateFromControls();
@@ -425,6 +450,11 @@ lineHeightInput.addEventListener("input", updateFromControls);
 zoomInput.addEventListener("input", updateFromControls);
 offsetXInput.addEventListener("input", updateFromControls);
 offsetYInput.addEventListener("input", updateFromControls);
+offsetX2Input.addEventListener("input", updateFromControls);
+offsetY2Input.addEventListener("input", updateFromControls);
+blendStartInput.addEventListener("input", updateFromControls);
+blendEndInput.addEventListener("input", updateFromControls);
+blendStrengthInput.addEventListener("input", updateFromControls);
 monoInput.addEventListener("change", updateFromControls);
 markdownInput.addEventListener("change", updateFromControls);
 manualLinesInput.addEventListener("change", updateFromControls);
