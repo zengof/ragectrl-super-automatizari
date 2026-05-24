@@ -2,15 +2,22 @@ const canvas = document.querySelector("#posterCanvas");
 const ctx = canvas.getContext("2d");
 
 const imageInput = document.querySelector("#imageInput");
+const imageInput2 = document.querySelector("#imageInput2");
 const captionInput = document.querySelector("#captionInput");
 const textSizeInput = document.querySelector("#textSizeInput");
 const textOffsetYInput = document.querySelector("#textOffsetYInput");
+const lineHeightInput = document.querySelector("#lineHeightInput");
 const zoomInput = document.querySelector("#zoomInput");
 const offsetXInput = document.querySelector("#offsetXInput");
 const offsetYInput = document.querySelector("#offsetYInput");
+const activeImageInput = document.querySelector("#activeImageInput");
+const blendStartInput = document.querySelector("#blendStartInput");
+const blendEndInput = document.querySelector("#blendEndInput");
+const blendStrengthInput = document.querySelector("#blendStrengthInput");
 const monoInput = document.querySelector("#monoInput");
 const markdownInput = document.querySelector("#markdownInput");
 const manualLinesInput = document.querySelector("#manualLinesInput");
+const dualPhotoInput = document.querySelector("#dualPhotoInput");
 const downloadButton = document.querySelector("#downloadButton");
 const shareButton = document.querySelector("#shareButton");
 const resetButton = document.querySelector("#resetButton");
@@ -20,15 +27,24 @@ template.src = "assets/postare-rage-template.png?v=10";
 
 const state = {
   image: null,
+  image2: null,
   caption: captionInput.value,
   textSize: Number(textSizeInput.value),
   textOffsetY: Number(textOffsetYInput.value),
+  lineHeight: Number(lineHeightInput.value),
   zoom: Number(zoomInput.value),
   offsetX: Number(offsetXInput.value),
   offsetY: Number(offsetYInput.value),
+  offsetX2: 0,
+  offsetY2: 0,
+  activeImage: activeImageInput.value,
+  blendStart: Number(blendStartInput.value),
+  blendEnd: Number(blendEndInput.value),
+  blendStrength: Number(blendStrengthInput.value),
   mono: monoInput.checked,
   markdown: markdownInput.checked,
   manualLines: manualLinesInput.checked,
+  dualPhoto: dualPhotoInput.checked,
   dragging: false,
   lastPoint: null,
 };
@@ -37,7 +53,7 @@ const W = canvas.width;
 const H = canvas.height;
 const photoArea = { x: 0, y: 0, w: W, h: 900 };
 const captionArea = { x: 115, y: 850, w: 770, h: 220 };
-const captionFont = '"Geist Mono", ui-monospace, SFMono-Regular, Consolas, monospace';
+const captionFont = '"Bebas Neue", sans-serif';
 const captionWhite = "#f7f7f7";
 const logoGreen = "#05f439";
 
@@ -72,6 +88,36 @@ function drawPhotoLayer() {
 
   if (state.mono) ctx.filter = "grayscale(1) contrast(1.08)";
   ctx.drawImage(img, drawX, drawY, drawW, drawH);
+
+  if (state.dualPhoto && state.image2) {
+    const img2 = state.image2;
+    const cover2 = coverRect(img2.width, img2.height, photoArea.w, photoArea.h);
+    const drawW2 = cover2.w * state.zoom;
+    const drawH2 = cover2.h * state.zoom;
+    const drawX2 = photoArea.x + (photoArea.w - drawW2) / 2 + state.offsetX2;
+    const drawY2 = photoArea.y + (photoArea.h - drawH2) / 2 + state.offsetY2;
+
+    const overlayCanvas = document.createElement("canvas");
+    overlayCanvas.width = W;
+    overlayCanvas.height = H;
+    const overlayCtx = overlayCanvas.getContext("2d");
+    overlayCtx.drawImage(img2, drawX2, drawY2, drawW2, drawH2);
+
+    const startPct = Math.min(state.blendStart, state.blendEnd) / 100;
+    const endPct = Math.max(state.blendStart, state.blendEnd) / 100;
+    const strength = clamp(state.blendStrength / 100, 0, 1);
+    const blendStart = photoArea.x + photoArea.w * startPct;
+    const blendEnd = photoArea.x + photoArea.w * endPct;
+    const overlayMask = overlayCtx.createLinearGradient(blendStart, 0, blendEnd, 0);
+    overlayMask.addColorStop(0, "rgba(0, 0, 0, 0)");
+    overlayMask.addColorStop(1, `rgba(0, 0, 0, ${strength})`);
+    overlayCtx.globalCompositeOperation = "destination-in";
+    overlayCtx.fillStyle = overlayMask;
+    overlayCtx.fillRect(photoArea.x, photoArea.y, photoArea.w, photoArea.h);
+
+    ctx.drawImage(overlayCanvas, 0, 0);
+  }
+
   ctx.filter = "none";
   ctx.restore();
 }
@@ -99,7 +145,7 @@ function drawCaption() {
   const text = state.caption.trim() ? state.caption : "Your caption";
   const layout = fitText(text, captionArea.w, 3, state.textSize, 24);
   const fontSize = layout.fontSize;
-  const lineHeight = Math.round(fontSize * 1.22);
+  const lineHeight = Math.round(fontSize * state.lineHeight);
   const lines = layout.lines;
   const totalHeight = (lines.length - 1) * lineHeight + fontSize;
   const firstY = captionArea.y + (captionArea.h - totalHeight) / 2 + fontSize * 0.82 + state.textOffsetY;
@@ -263,24 +309,56 @@ function measureText(text) {
   return ctx.measureText(text).width;
 }
 
+function syncPositionControls() {
+  const isSecond = state.dualPhoto && state.activeImage === "image2";
+  offsetXInput.value = String(Math.round(isSecond ? state.offsetX2 : state.offsetX));
+  offsetYInput.value = String(Math.round(isSecond ? state.offsetY2 : state.offsetY));
+}
+
+function handleActiveImageChange() {
+  state.activeImage = activeImageInput.value;
+  syncPositionControls();
+  draw();
+}
+
 function updateFromControls() {
   state.caption = captionInput.value;
   state.textSize = Number(textSizeInput.value);
   state.textOffsetY = Number(textOffsetYInput.value);
+  state.lineHeight = Number(lineHeightInput.value);
   state.zoom = Number(zoomInput.value);
   state.offsetX = Number(offsetXInput.value);
   state.offsetY = Number(offsetYInput.value);
+  state.activeImage = activeImageInput.value;
+  if (state.activeImage === "image2") {
+    state.offsetX2 = Number(offsetXInput.value);
+    state.offsetY2 = Number(offsetYInput.value);
+  } else {
+    state.offsetX = Number(offsetXInput.value);
+    state.offsetY = Number(offsetYInput.value);
+  }
+  state.blendStart = Number(blendStartInput.value);
+  state.blendEnd = Number(blendEndInput.value);
+  state.blendStrength = Number(blendStrengthInput.value);
   state.mono = monoInput.checked;
   state.markdown = markdownInput.checked;
   state.manualLines = manualLinesInput.checked;
+  state.dualPhoto = dualPhotoInput.checked;
   draw();
 }
 
 function resetAdjustments() {
   textOffsetYInput.value = "0";
+  lineHeightInput.value = "1.22";
   zoomInput.value = "1";
   offsetXInput.value = "0";
   offsetYInput.value = "0";
+  state.offsetX2 = 0;
+  state.offsetY2 = 0;
+  activeImageInput.value = "image";
+  blendStartInput.value = "35";
+  blendEndInput.value = "65";
+  blendStrengthInput.value = "100";
   updateFromControls();
 }
 
@@ -290,21 +368,25 @@ function resetSingleControl(controlId) {
   const defaults = {
     textSizeInput: "58",
     textOffsetYInput: "0",
+    lineHeightInput: "1.22",
     zoomInput: "1",
     offsetXInput: "0",
     offsetYInput: "0",
+    blendStartInput: "35",
+    blendEndInput: "65",
+    blendStrengthInput: "100",
   };
   control.value = defaults[controlId] || "0";
   updateFromControls();
 }
 
-async function loadImage(file) {
+async function loadImage(file, target = "image") {
   if (!file) return;
   const url = URL.createObjectURL(file);
   const image = new Image();
   image.onload = () => {
     URL.revokeObjectURL(url);
-    state.image = image;
+    state[target] = image;
     shareButton.disabled = !navigator.canShare;
     draw();
   };
@@ -331,7 +413,7 @@ async function shareImage() {
   const file = new File([blob], "rage-ctrl.png", { type: "image/png" });
 
   if (navigator.canShare?.({ files: [file] })) {
-    await navigator.share({ files: [file], title: "Rage CTRL" });
+    await navigator.share({ files: [file], title: "RageCTRL" });
     return;
   }
 
@@ -350,20 +432,27 @@ function pointFromEvent(event) {
 
 function startDrag(event) {
   if (!state.image) return;
+  if (event.pointerType === "touch") return;
   state.dragging = true;
   state.lastPoint = pointFromEvent(event);
 }
 
 function moveDrag(event) {
+  if (event.pointerType === "touch") return;
   if (!state.dragging || !state.lastPoint) return;
   event.preventDefault();
   const point = pointFromEvent(event);
   const dx = point.x - state.lastPoint.x;
   const dy = point.y - state.lastPoint.y;
-  state.offsetX = clamp(state.offsetX + dx, Number(offsetXInput.min), Number(offsetXInput.max));
-  state.offsetY = clamp(state.offsetY + dy, Number(offsetYInput.min), Number(offsetYInput.max));
-  offsetXInput.value = String(Math.round(state.offsetX));
-  offsetYInput.value = String(Math.round(state.offsetY));
+  const useSecond = state.dualPhoto && state.activeImage === "image2";
+  if (useSecond) {
+    state.offsetX2 = clamp(state.offsetX2 + dx, Number(offsetXInput.min), Number(offsetXInput.max));
+    state.offsetY2 = clamp(state.offsetY2 + dy, Number(offsetYInput.min), Number(offsetYInput.max));
+  } else {
+    state.offsetX = clamp(state.offsetX + dx, Number(offsetXInput.min), Number(offsetXInput.max));
+    state.offsetY = clamp(state.offsetY + dy, Number(offsetYInput.min), Number(offsetYInput.max));
+  }
+  syncPositionControls();
   state.lastPoint = point;
   draw();
 }
@@ -377,16 +466,31 @@ function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
-imageInput.addEventListener("change", (event) => loadImage(event.target.files?.[0]));
+imageInput.addEventListener("change", (event) => loadImage(event.target.files?.[0], "image"));
+imageInput2.addEventListener("change", (event) => loadImage(event.target.files?.[0], "image2"));
 captionInput.addEventListener("input", updateFromControls);
 textSizeInput.addEventListener("input", updateFromControls);
 textOffsetYInput.addEventListener("input", updateFromControls);
+lineHeightInput.addEventListener("input", updateFromControls);
 zoomInput.addEventListener("input", updateFromControls);
 offsetXInput.addEventListener("input", updateFromControls);
 offsetYInput.addEventListener("input", updateFromControls);
+activeImageInput.addEventListener("change", handleActiveImageChange);
+blendStartInput.addEventListener("input", updateFromControls);
+blendEndInput.addEventListener("input", updateFromControls);
+blendStrengthInput.addEventListener("input", updateFromControls);
 monoInput.addEventListener("change", updateFromControls);
 markdownInput.addEventListener("change", updateFromControls);
 manualLinesInput.addEventListener("change", updateFromControls);
+dualPhotoInput.addEventListener("change", () => {
+  state.dualPhoto = dualPhotoInput.checked;
+  if (!state.dualPhoto && state.activeImage === "image2") {
+    activeImageInput.value = "image";
+    state.activeImage = "image";
+  }
+  syncPositionControls();
+  updateFromControls();
+});
 downloadButton.addEventListener("click", saveImage);
 shareButton.addEventListener("click", shareImage);
 resetButton.addEventListener("click", resetAdjustments);
@@ -402,14 +506,12 @@ if (document.fonts) {
 
 if (navigator.canShare) shareButton.disabled = false;
 
+syncPositionControls();
+
 if (window.PointerEvent) {
   canvas.addEventListener("pointerdown", startDrag);
   canvas.addEventListener("pointermove", moveDrag);
   window.addEventListener("pointerup", endDrag);
-} else {
-  canvas.addEventListener("touchstart", startDrag, { passive: true });
-  canvas.addEventListener("touchmove", moveDrag, { passive: false });
-  window.addEventListener("touchend", endDrag);
 }
 
 if ("serviceWorker" in navigator) {

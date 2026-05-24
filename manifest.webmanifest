@@ -1,6 +1,6 @@
 {
-  "name": "Rage CTRL Generator",
-  "short_name": "Rage CTRL",
+  "name": "RageCTRL Generator",
+  "short_name": "RageCTRL",
   "description": "Mobile poster generator for image and text templates.",
   "start_url": ".",
   "scope": ".",
