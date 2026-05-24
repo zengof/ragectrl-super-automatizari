@@ -32,6 +32,7 @@ const state = {
   textOffsetY: Number(textOffsetYInput.value),
   lineHeight: Number(lineHeightInput.value),
   zoom: Number(zoomInput.value),
+  zoom2: Number(zoomInput.value),
   offsetX: Number(offsetXInput.value),
   offsetY: Number(offsetYInput.value),
   offsetX2: 0,
@@ -90,8 +91,8 @@ function drawPhotoLayer() {
   if (state.dualPhoto && state.image2) {
     const img2 = state.image2;
     const cover2 = coverRect(img2.width, img2.height, photoArea.w, photoArea.h);
-    const drawW2 = cover2.w * state.zoom;
-    const drawH2 = cover2.h * state.zoom;
+    const drawW2 = cover2.w * state.zoom2;
+    const drawH2 = cover2.h * state.zoom2;
     const drawX2 = photoArea.x + (photoArea.w - drawW2) / 2 + state.offsetX2;
     const drawY2 = photoArea.y + (photoArea.h - drawH2) / 2 + state.offsetY2;
 
@@ -310,6 +311,7 @@ function measureText(text) {
 
 function syncPositionControls() {
   const isSecond = state.dualPhoto && state.activeImage === "image2";
+  zoomInput.value = String(isSecond ? state.zoom2 : state.zoom);
   offsetXInput.value = String(Math.round(isSecond ? state.offsetX2 : state.offsetX));
   offsetYInput.value = String(Math.round(isSecond ? state.offsetY2 : state.offsetY));
 }
@@ -325,8 +327,9 @@ function updateFromControls() {
   state.textSize = Number(textSizeInput.value);
   state.textOffsetY = Number(textOffsetYInput.value);
   state.lineHeight = Number(lineHeightInput.value);
-  state.zoom = Number(zoomInput.value);
   const useSecond = state.dualPhoto && state.activeImage === "image2";
+  if (useSecond) state.zoom2 = Number(zoomInput.value);
+  else state.zoom = Number(zoomInput.value);
   if (useSecond) {
     state.offsetX2 = Number(offsetXInput.value);
     state.offsetY2 = Number(offsetYInput.value);
@@ -353,6 +356,8 @@ function resetAdjustments() {
   zoomInput.value = "1";
   offsetXInput.value = "0";
   offsetYInput.value = "0";
+  state.zoom = 1;
+  state.zoom2 = 1;
   state.offsetX2 = 0;
   state.offsetY2 = 0;
   blendLocationInput.value = "50";
@@ -388,6 +393,13 @@ function resetSingleControl(controlId) {
     draw();
     return;
   }
+  if (controlId === "zoomInput") {
+    if (state.dualPhoto && state.activeImage === "image2") state.zoom2 = 1;
+    else state.zoom = 1;
+    syncPositionControls();
+    draw();
+    return;
+  }
 
   control.value = defaults[controlId] || "0";
   updateFromControls();
@@ -412,13 +424,32 @@ function exportBlob() {
   });
 }
 
+function triggerDownload(url, filename) {
+  const link = document.createElement("a");
+  link.download = filename;
+  link.href = url;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
 async function saveImage() {
   const blob = await exportBlob();
-  const link = document.createElement("a");
-  link.download = `rage-ctrl-${Date.now()}.png`;
-  link.href = URL.createObjectURL(blob);
-  link.click();
-  setTimeout(() => URL.revokeObjectURL(link.href), 500);
+  const filename = `rage-ctrl-${Date.now()}.png`;
+
+  if (!blob) {
+    triggerDownload(canvas.toDataURL("image/png"), filename);
+    return;
+  }
+
+  if (navigator.msSaveOrOpenBlob) {
+    navigator.msSaveOrOpenBlob(blob, filename);
+    return;
+  }
+
+  const objectUrl = URL.createObjectURL(blob);
+  triggerDownload(objectUrl, filename);
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
 }
 
 async function shareImage() {
