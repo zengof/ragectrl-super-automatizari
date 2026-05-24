@@ -428,28 +428,45 @@ function triggerDownload(url, filename) {
   const link = document.createElement("a");
   link.download = filename;
   link.href = url;
+  link.rel = "noopener";
   document.body.appendChild(link);
   link.click();
   link.remove();
 }
 
 async function saveImage() {
-  const blob = await exportBlob();
   const filename = `rage-ctrl-${Date.now()}.png`;
+  const blob = await exportBlob();
+  const dataUrl = canvas.toDataURL("image/png");
 
-  if (!blob) {
-    triggerDownload(canvas.toDataURL("image/png"), filename);
-    return;
+  if ("showSaveFilePicker" in window && blob) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: filename,
+        types: [{ description: "PNG image", accept: { "image/png": [".png"] } }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      return;
+    } catch (error) {
+      if (error?.name !== "AbortError") console.error("File picker save failed:", error);
+    }
   }
 
-  if (navigator.msSaveOrOpenBlob) {
+  if (navigator.msSaveOrOpenBlob && blob) {
     navigator.msSaveOrOpenBlob(blob, filename);
     return;
   }
 
-  const objectUrl = URL.createObjectURL(blob);
-  triggerDownload(objectUrl, filename);
-  setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+  if (blob) {
+    const objectUrl = URL.createObjectURL(blob);
+    triggerDownload(objectUrl, filename);
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
+    return;
+  }
+
+  triggerDownload(dataUrl, filename);
 }
 
 async function shareImage() {
