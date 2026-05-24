@@ -42,6 +42,17 @@ textarea {
   font: inherit;
 }
 
+select {
+  font: inherit;
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-strong);
+  color: var(--text);
+  padding: 6px 8px;
+}
+
 .app-shell {
   min-height: 100svh;
   display: grid;
