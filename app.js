@@ -94,8 +94,8 @@ function drawPhotoLayer() {
     const cover2 = coverRect(img2.width, img2.height, photoArea.w, photoArea.h);
     const drawW2 = cover2.w * state.zoom;
     const drawH2 = cover2.h * state.zoom;
-    const drawX2 = photoArea.x + (photoArea.w - drawW2) / 2 + state.offsetX2;
-    const drawY2 = photoArea.y + (photoArea.h - drawH2) / 2 + state.offsetY2;
+    const drawX2 = photoArea.x + (photoArea.w - drawW2) / 2 + state.offsetX;
+    const drawY2 = photoArea.y + (photoArea.h - drawH2) / 2 + state.offsetY;
 
     const overlayCanvas = document.createElement("canvas");
     overlayCanvas.width = W;
@@ -103,14 +103,11 @@ function drawPhotoLayer() {
     const overlayCtx = overlayCanvas.getContext("2d");
     overlayCtx.drawImage(img2, drawX2, drawY2, drawW2, drawH2);
 
-    const startPct = Math.min(state.blendStart, state.blendEnd) / 100;
-    const endPct = Math.max(state.blendStart, state.blendEnd) / 100;
-    const strength = clamp(state.blendStrength / 100, 0, 1);
-    const blendStart = photoArea.x + photoArea.w * startPct;
-    const blendEnd = photoArea.x + photoArea.w * endPct;
+    const blendStart = photoArea.x + photoArea.w * 0.35;
+    const blendEnd = photoArea.x + photoArea.w * 0.65;
     const overlayMask = overlayCtx.createLinearGradient(blendStart, 0, blendEnd, 0);
     overlayMask.addColorStop(0, "rgba(0, 0, 0, 0)");
-    overlayMask.addColorStop(1, `rgba(0, 0, 0, ${strength})`);
+    overlayMask.addColorStop(1, "rgba(0, 0, 0, 1)");
     overlayCtx.globalCompositeOperation = "destination-in";
     overlayCtx.fillStyle = overlayMask;
     overlayCtx.fillRect(photoArea.x, photoArea.y, photoArea.w, photoArea.h);
