@@ -428,28 +428,16 @@ function triggerDownload(url, filename) {
   const link = document.createElement("a");
   link.download = filename;
   link.href = url;
+  link.rel = "noopener";
   document.body.appendChild(link);
   link.click();
   link.remove();
 }
 
 async function saveImage() {
-  const blob = await exportBlob();
   const filename = `rage-ctrl-${Date.now()}.png`;
-
-  if (!blob) {
-    triggerDownload(canvas.toDataURL("image/png"), filename);
-    return;
-  }
-
-  if (navigator.msSaveOrOpenBlob) {
-    navigator.msSaveOrOpenBlob(blob, filename);
-    return;
-  }
-
-  const objectUrl = URL.createObjectURL(blob);
-  triggerDownload(objectUrl, filename);
-  setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+  const dataUrl = canvas.toDataURL("image/png");
+  triggerDownload(dataUrl, filename);
 }
 
 async function shareImage() {
