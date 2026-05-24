@@ -368,6 +368,22 @@ function resetSingleControl(controlId) {
     blendEndInput: "65",
     blendStrengthInput: "100",
   };
+  if (controlId === "offsetXInput") {
+    if (state.dualPhoto && state.activeImage === "image2") state.offsetX2 = 0;
+    else state.offsetX = 0;
+    syncPositionControls();
+    draw();
+    return;
+  }
+
+  if (controlId === "offsetYInput") {
+    if (state.dualPhoto && state.activeImage === "image2") state.offsetY2 = 0;
+    else state.offsetY = 0;
+    syncPositionControls();
+    draw();
+    return;
+  }
+
   control.value = defaults[controlId] || "0";
   updateFromControls();
 }
