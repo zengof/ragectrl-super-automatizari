@@ -6,8 +6,8 @@
     <meta name="theme-color" content="#050505">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Rage CTRL">
-    <title>Rage CTRL Generator</title>
+    <meta name="apple-mobile-web-app-title" content="RageCTRL">
+    <title>RageCTRL Generator</title>
     <link rel="manifest" href="manifest.webmanifest?v=10">
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.svg">
@@ -26,7 +26,12 @@
           <label class="tool-button">
             <input id="imageInput" type="file" accept="image/*">
             <span aria-hidden="true">+</span>
-            Photo
+            Photo 1
+          </label>
+          <label class="tool-button">
+            <input id="imageInput2" type="file" accept="image/*">
+            <span aria-hidden="true">+</span>
+            Photo 2
           </label>
           <button id="shareButton" class="tool-button" type="button" disabled>
             <span aria-hidden="true">↗</span>
@@ -53,7 +58,14 @@
               <span>Text size</span>
               <button class="zero-button" type="button" data-reset="textSizeInput">58</button>
             </span>
-            <input id="textSizeInput" type="range" min="24" max="76" step="1" value="58">
+            <input id="textSizeInput" type="range" min="24" max="110" step="1" value="58">
+          </label>
+          <label class="slider">
+            <span class="slider-head">
+              <span>Line spacing</span>
+              <button class="zero-button" type="button" data-reset="lineHeightInput">1.22</button>
+            </span>
+            <input id="lineHeightInput" type="range" min="0.9" max="1.4" step="0.01" value="1.22">
           </label>
           <label class="slider">
             <span class="slider-head">
@@ -83,6 +95,34 @@
             </span>
             <input id="offsetXInput" type="range" min="-260" max="260" step="1" value="0">
           </label>
+          <label class="field">
+            <span>Move controls target</span>
+            <select id="activeImageInput">
+              <option value="image">Photo 1</option>
+              <option value="image2">Photo 2</option>
+            </select>
+          </label>
+          <label class="slider">
+            <span class="slider-head">
+              <span>Blend start</span>
+              <button class="zero-button" type="button" data-reset="blendStartInput">35</button>
+            </span>
+            <input id="blendStartInput" type="range" min="0" max="100" step="1" value="35">
+          </label>
+          <label class="slider">
+            <span class="slider-head">
+              <span>Blend end</span>
+              <button class="zero-button" type="button" data-reset="blendEndInput">65</button>
+            </span>
+            <input id="blendEndInput" type="range" min="0" max="100" step="1" value="65">
+          </label>
+          <label class="slider">
+            <span class="slider-head">
+              <span>Blend strength</span>
+              <button class="zero-button" type="button" data-reset="blendStrengthInput">100</button>
+            </span>
+            <input id="blendStrengthInput" type="range" min="0" max="100" step="1" value="100">
+          </label>
           <label class="switch">
             <input id="monoInput" type="checkbox" checked>
             <span>Black & white</span>
@@ -94,6 +134,10 @@
           <label class="switch">
             <input id="manualLinesInput" type="checkbox" checked>
             <span>Manual lines</span>
+          </label>
+          <label class="switch">
+            <input id="dualPhotoInput" type="checkbox">
+            <span>Use 2 photos</span>
           </label>
         </div>
       </section>

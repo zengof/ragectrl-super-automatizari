@@ -10,15 +10,7 @@
   --green-soft: #0aa41e;
   --danger: #ff5563;
   --radius: 8px;
-  font-family: "Geist Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
-}
-
-@font-face {
-  font-family: "Geist Mono";
-  src: url("assets/fonts/GeistMono-Bold.ttf") format("truetype");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
+  font-family: "Bebas Neue", sans-serif;
 }
 
 @font-face {
@@ -176,7 +168,7 @@ textarea {
   color: var(--text);
   background: transparent;
   font-size: 20px;
-  font-family: "Geist Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-family: "Bebas Neue", sans-serif;
   font-weight: 700;
   line-height: 1.2;
 }
@@ -266,4 +258,15 @@ input[type="range"] {
   textarea {
     font-size: 18px;
   }
+}
+
+
+select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-strong);
+  color: var(--text);
+  padding: 8px;
+  font-size: 16px;
 }
