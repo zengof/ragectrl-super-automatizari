@@ -10,7 +10,8 @@ const lineHeightInput = document.querySelector("#lineHeightInput");
 const zoomInput = document.querySelector("#zoomInput");
 const offsetXInput = document.querySelector("#offsetXInput");
 const offsetYInput = document.querySelector("#offsetYInput");
-const activeImageInput = document.querySelector("#activeImageInput");
+const offsetX2Input = document.querySelector("#offsetX2Input");
+const offsetY2Input = document.querySelector("#offsetY2Input");
 const blendStartInput = document.querySelector("#blendStartInput");
 const blendEndInput = document.querySelector("#blendEndInput");
 const blendStrengthInput = document.querySelector("#blendStrengthInput");
@@ -35,9 +36,8 @@ const state = {
   zoom: Number(zoomInput.value),
   offsetX: Number(offsetXInput.value),
   offsetY: Number(offsetYInput.value),
-  offsetX2: 0,
-  offsetY2: 0,
-  activeImage: activeImageInput.value,
+  offsetX2: Number(offsetX2Input.value),
+  offsetY2: Number(offsetY2Input.value),
   blendStart: Number(blendStartInput.value),
   blendEnd: Number(blendEndInput.value),
   blendStrength: Number(blendStrengthInput.value),
@@ -94,8 +94,8 @@ function drawPhotoLayer() {
     const cover2 = coverRect(img2.width, img2.height, photoArea.w, photoArea.h);
     const drawW2 = cover2.w * state.zoom;
     const drawH2 = cover2.h * state.zoom;
-    const drawX2 = photoArea.x + (photoArea.w - drawW2) / 2 + state.offsetX2;
-    const drawY2 = photoArea.y + (photoArea.h - drawH2) / 2 + state.offsetY2;
+    const drawX2 = photoArea.x + (photoArea.w - drawW2) / 2 + state.offsetX;
+    const drawY2 = photoArea.y + (photoArea.h - drawH2) / 2 + state.offsetY;
 
     const overlayCanvas = document.createElement("canvas");
     overlayCanvas.width = W;
@@ -103,14 +103,11 @@ function drawPhotoLayer() {
     const overlayCtx = overlayCanvas.getContext("2d");
     overlayCtx.drawImage(img2, drawX2, drawY2, drawW2, drawH2);
 
-    const startPct = Math.min(state.blendStart, state.blendEnd) / 100;
-    const endPct = Math.max(state.blendStart, state.blendEnd) / 100;
-    const strength = clamp(state.blendStrength / 100, 0, 1);
-    const blendStart = photoArea.x + photoArea.w * startPct;
-    const blendEnd = photoArea.x + photoArea.w * endPct;
+    const blendStart = photoArea.x + photoArea.w * 0.35;
+    const blendEnd = photoArea.x + photoArea.w * 0.65;
     const overlayMask = overlayCtx.createLinearGradient(blendStart, 0, blendEnd, 0);
     overlayMask.addColorStop(0, "rgba(0, 0, 0, 0)");
-    overlayMask.addColorStop(1, `rgba(0, 0, 0, ${strength})`);
+    overlayMask.addColorStop(1, "rgba(0, 0, 0, 1)");
     overlayCtx.globalCompositeOperation = "destination-in";
     overlayCtx.fillStyle = overlayMask;
     overlayCtx.fillRect(photoArea.x, photoArea.y, photoArea.w, photoArea.h);
@@ -327,16 +324,10 @@ function updateFromControls() {
   state.textOffsetY = Number(textOffsetYInput.value);
   state.lineHeight = Number(lineHeightInput.value);
   state.zoom = Number(zoomInput.value);
-
-  state.activeImage = activeImageInput.value;
-  if (state.dualPhoto && state.activeImage === "image2") {
-    state.offsetX2 = Number(offsetXInput.value);
-    state.offsetY2 = Number(offsetYInput.value);
-  } else {
-    state.offsetX = Number(offsetXInput.value);
-    state.offsetY = Number(offsetYInput.value);
-  }
-
+  state.offsetX = Number(offsetXInput.value);
+  state.offsetY = Number(offsetYInput.value);
+  state.offsetX2 = Number(offsetX2Input.value);
+  state.offsetY2 = Number(offsetY2Input.value);
   state.blendStart = Number(blendStartInput.value);
   state.blendEnd = Number(blendEndInput.value);
   state.blendStrength = Number(blendStrengthInput.value);
@@ -344,8 +335,6 @@ function updateFromControls() {
   state.markdown = markdownInput.checked;
   state.manualLines = manualLinesInput.checked;
   state.dualPhoto = dualPhotoInput.checked;
-
-  syncPositionControls();
   draw();
 }
 
@@ -355,9 +344,8 @@ function resetAdjustments() {
   zoomInput.value = "1";
   offsetXInput.value = "0";
   offsetYInput.value = "0";
-  state.offsetX2 = 0;
-  state.offsetY2 = 0;
-  activeImageInput.value = "image";
+  offsetX2Input.value = "0";
+  offsetY2Input.value = "0";
   blendStartInput.value = "35";
   blendEndInput.value = "65";
   blendStrengthInput.value = "100";
@@ -374,6 +362,8 @@ function resetSingleControl(controlId) {
     zoomInput: "1",
     offsetXInput: "0",
     offsetYInput: "0",
+    offsetX2Input: "0",
+    offsetY2Input: "0",
     blendStartInput: "35",
     blendEndInput: "65",
     blendStrengthInput: "100",
@@ -493,22 +483,15 @@ lineHeightInput.addEventListener("input", updateFromControls);
 zoomInput.addEventListener("input", updateFromControls);
 offsetXInput.addEventListener("input", updateFromControls);
 offsetYInput.addEventListener("input", updateFromControls);
-activeImageInput.addEventListener("change", handleActiveImageChange);
+offsetX2Input.addEventListener("input", updateFromControls);
+offsetY2Input.addEventListener("input", updateFromControls);
 blendStartInput.addEventListener("input", updateFromControls);
 blendEndInput.addEventListener("input", updateFromControls);
 blendStrengthInput.addEventListener("input", updateFromControls);
 monoInput.addEventListener("change", updateFromControls);
 markdownInput.addEventListener("change", updateFromControls);
 manualLinesInput.addEventListener("change", updateFromControls);
-dualPhotoInput.addEventListener("change", () => {
-  state.dualPhoto = dualPhotoInput.checked;
-  if (!state.dualPhoto && state.activeImage === "image2") {
-    activeImageInput.value = "image";
-    state.activeImage = "image";
-  }
-  syncPositionControls();
-  updateFromControls();
-});
+dualPhotoInput.addEventListener("change", updateFromControls);
 downloadButton.addEventListener("click", saveImage);
 shareButton.addEventListener("click", shareImage);
 resetButton.addEventListener("click", resetAdjustments);

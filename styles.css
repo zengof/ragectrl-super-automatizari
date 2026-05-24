@@ -16,7 +16,7 @@
 @font-face {
   font-family: "Bebas Neue";
   src: url("assets/fonts/BebasNeue-Regular.ttf") format("truetype");
-  font-weight: 400;
+  font-weight: 400 900;
   font-style: normal;
   font-display: swap;
 }
