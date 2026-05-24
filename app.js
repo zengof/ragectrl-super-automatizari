@@ -2,6 +2,7 @@ const canvas = document.querySelector("#posterCanvas");
 const ctx = canvas.getContext("2d");
 
 const imageInput = document.querySelector("#imageInput");
+const imageInput2 = document.querySelector("#imageInput2");
 const captionInput = document.querySelector("#captionInput");
 const textSizeInput = document.querySelector("#textSizeInput");
 const textOffsetYInput = document.querySelector("#textOffsetYInput");
@@ -12,6 +13,7 @@ const offsetYInput = document.querySelector("#offsetYInput");
 const monoInput = document.querySelector("#monoInput");
 const markdownInput = document.querySelector("#markdownInput");
 const manualLinesInput = document.querySelector("#manualLinesInput");
+const dualPhotoInput = document.querySelector("#dualPhotoInput");
 const downloadButton = document.querySelector("#downloadButton");
 const shareButton = document.querySelector("#shareButton");
 const resetButton = document.querySelector("#resetButton");
@@ -21,6 +23,7 @@ template.src = "assets/postare-rage-template.png?v=10";
 
 const state = {
   image: null,
+  image2: null,
   caption: captionInput.value,
   textSize: Number(textSizeInput.value),
   textOffsetY: Number(textOffsetYInput.value),
@@ -31,6 +34,7 @@ const state = {
   mono: monoInput.checked,
   markdown: markdownInput.checked,
   manualLines: manualLinesInput.checked,
+  dualPhoto: dualPhotoInput.checked,
   dragging: false,
   lastPoint: null,
 };
@@ -74,6 +78,33 @@ function drawPhotoLayer() {
 
   if (state.mono) ctx.filter = "grayscale(1) contrast(1.08)";
   ctx.drawImage(img, drawX, drawY, drawW, drawH);
+
+  if (state.dualPhoto && state.image2) {
+    const img2 = state.image2;
+    const cover2 = coverRect(img2.width, img2.height, photoArea.w, photoArea.h);
+    const drawW2 = cover2.w * state.zoom;
+    const drawH2 = cover2.h * state.zoom;
+    const drawX2 = photoArea.x + (photoArea.w - drawW2) / 2 + state.offsetX;
+    const drawY2 = photoArea.y + (photoArea.h - drawH2) / 2 + state.offsetY;
+
+    const overlayCanvas = document.createElement("canvas");
+    overlayCanvas.width = W;
+    overlayCanvas.height = H;
+    const overlayCtx = overlayCanvas.getContext("2d");
+    overlayCtx.drawImage(img2, drawX2, drawY2, drawW2, drawH2);
+
+    const blendStart = photoArea.x + photoArea.w * 0.35;
+    const blendEnd = photoArea.x + photoArea.w * 0.65;
+    const overlayMask = overlayCtx.createLinearGradient(blendStart, 0, blendEnd, 0);
+    overlayMask.addColorStop(0, "rgba(0, 0, 0, 0)");
+    overlayMask.addColorStop(1, "rgba(0, 0, 0, 1)");
+    overlayCtx.globalCompositeOperation = "destination-in";
+    overlayCtx.fillStyle = overlayMask;
+    overlayCtx.fillRect(photoArea.x, photoArea.y, photoArea.w, photoArea.h);
+
+    ctx.drawImage(overlayCanvas, 0, 0);
+  }
+
   ctx.filter = "none";
   ctx.restore();
 }
@@ -276,6 +307,7 @@ function updateFromControls() {
   state.mono = monoInput.checked;
   state.markdown = markdownInput.checked;
   state.manualLines = manualLinesInput.checked;
+  state.dualPhoto = dualPhotoInput.checked;
   draw();
 }
 
@@ -303,13 +335,13 @@ function resetSingleControl(controlId) {
   updateFromControls();
 }
 
-async function loadImage(file) {
+async function loadImage(file, target = "image") {
   if (!file) return;
   const url = URL.createObjectURL(file);
   const image = new Image();
   image.onload = () => {
     URL.revokeObjectURL(url);
-    state.image = image;
+    state[target] = image;
     shareButton.disabled = !navigator.canShare;
     draw();
   };
@@ -384,7 +416,8 @@ function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
-imageInput.addEventListener("change", (event) => loadImage(event.target.files?.[0]));
+imageInput.addEventListener("change", (event) => loadImage(event.target.files?.[0], "image"));
+imageInput2.addEventListener("change", (event) => loadImage(event.target.files?.[0], "image2"));
 captionInput.addEventListener("input", updateFromControls);
 textSizeInput.addEventListener("input", updateFromControls);
 textOffsetYInput.addEventListener("input", updateFromControls);
@@ -395,6 +428,7 @@ offsetYInput.addEventListener("input", updateFromControls);
 monoInput.addEventListener("change", updateFromControls);
 markdownInput.addEventListener("change", updateFromControls);
 manualLinesInput.addEventListener("change", updateFromControls);
+dualPhotoInput.addEventListener("change", updateFromControls);
 downloadButton.addEventListener("click", saveImage);
 shareButton.addEventListener("click", shareImage);
 resetButton.addEventListener("click", resetAdjustments);
