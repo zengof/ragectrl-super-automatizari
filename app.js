@@ -424,13 +424,32 @@ function exportBlob() {
   });
 }
 
+function triggerDownload(url, filename) {
+  const link = document.createElement("a");
+  link.download = filename;
+  link.href = url;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
 async function saveImage() {
   const blob = await exportBlob();
-  const link = document.createElement("a");
-  link.download = `rage-ctrl-${Date.now()}.png`;
-  link.href = URL.createObjectURL(blob);
-  link.click();
-  setTimeout(() => URL.revokeObjectURL(link.href), 500);
+  const filename = `rage-ctrl-${Date.now()}.png`;
+
+  if (!blob) {
+    triggerDownload(canvas.toDataURL("image/png"), filename);
+    return;
+  }
+
+  if (navigator.msSaveOrOpenBlob) {
+    navigator.msSaveOrOpenBlob(blob, filename);
+    return;
+  }
+
+  const objectUrl = URL.createObjectURL(blob);
+  triggerDownload(objectUrl, filename);
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
 }
 
 async function shareImage() {
