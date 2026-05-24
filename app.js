@@ -37,7 +37,7 @@ const W = canvas.width;
 const H = canvas.height;
 const photoArea = { x: 0, y: 0, w: W, h: 900 };
 const captionArea = { x: 115, y: 850, w: 770, h: 220 };
-const captionFont = '"Geist Mono", ui-monospace, SFMono-Regular, Consolas, monospace';
+const captionFont = '"Bebas Neue", sans-serif';
 const captionWhite = "#f7f7f7";
 const logoGreen = "#05f439";
 
@@ -350,11 +350,13 @@ function pointFromEvent(event) {
 
 function startDrag(event) {
   if (!state.image) return;
+  if (event.pointerType === "touch") return;
   state.dragging = true;
   state.lastPoint = pointFromEvent(event);
 }
 
 function moveDrag(event) {
+  if (event.pointerType === "touch") return;
   if (!state.dragging || !state.lastPoint) return;
   event.preventDefault();
   const point = pointFromEvent(event);
@@ -406,10 +408,6 @@ if (window.PointerEvent) {
   canvas.addEventListener("pointerdown", startDrag);
   canvas.addEventListener("pointermove", moveDrag);
   window.addEventListener("pointerup", endDrag);
-} else {
-  canvas.addEventListener("touchstart", startDrag, { passive: true });
-  canvas.addEventListener("touchmove", moveDrag, { passive: false });
-  window.addEventListener("touchend", endDrag);
 }
 
 if ("serviceWorker" in navigator) {
