@@ -434,11 +434,12 @@ function triggerDownload(url, filename) {
 }
 
 async function saveImage() {
-  const blob = await exportBlob();
   const filename = `rage-ctrl-${Date.now()}.png`;
+  const dataUrl = canvas.toDataURL("image/png");
+  triggerDownload(dataUrl, filename);
 
+  const blob = await exportBlob();
   if (!blob) {
-    triggerDownload(canvas.toDataURL("image/png"), filename);
     return;
   }
 
@@ -446,10 +447,6 @@ async function saveImage() {
     navigator.msSaveOrOpenBlob(blob, filename);
     return;
   }
-
-  const objectUrl = URL.createObjectURL(blob);
-  triggerDownload(objectUrl, filename);
-  setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
 }
 
 async function shareImage() {
