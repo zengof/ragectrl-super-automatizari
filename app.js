@@ -428,6 +428,7 @@ function triggerDownload(url, filename) {
   const link = document.createElement("a");
   link.download = filename;
   link.href = url;
+  link.rel = "noopener";
   document.body.appendChild(link);
   link.click();
   link.remove();
@@ -443,8 +444,10 @@ async function saveImage() {
     return;
   }
 
-  if (navigator.msSaveOrOpenBlob) {
-    navigator.msSaveOrOpenBlob(blob, filename);
+  if (blob) {
+    const objectUrl = URL.createObjectURL(blob);
+    triggerDownload(objectUrl, filename);
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
     return;
   }
 }
