@@ -11,8 +11,7 @@ const zoomInput = document.querySelector("#zoomInput");
 const offsetXInput = document.querySelector("#offsetXInput");
 const offsetYInput = document.querySelector("#offsetYInput");
 const activeImageInput = document.querySelector("#activeImageInput");
-const blendStartInput = document.querySelector("#blendStartInput");
-const blendEndInput = document.querySelector("#blendEndInput");
+const blendLocationInput = document.querySelector("#blendLocationInput");
 const blendStrengthInput = document.querySelector("#blendStrengthInput");
 const monoInput = document.querySelector("#monoInput");
 const markdownInput = document.querySelector("#markdownInput");
@@ -37,8 +36,7 @@ const state = {
   offsetY: Number(offsetYInput.value),
   offsetX2: 0,
   offsetY2: 0,
-  blendStart: Number(blendStartInput.value),
-  blendEnd: Number(blendEndInput.value),
+  blendLocation: Number(blendLocationInput.value),
   blendStrength: Number(blendStrengthInput.value),
   mono: monoInput.checked,
   markdown: markdownInput.checked,
@@ -103,10 +101,10 @@ function drawPhotoLayer() {
     const overlayCtx = overlayCanvas.getContext("2d");
     overlayCtx.drawImage(img2, drawX2, drawY2, drawW2, drawH2);
 
-    const blendStartPct = Math.min(state.blendStart, state.blendEnd) / 100;
-    const blendEndPct = Math.max(state.blendStart, state.blendEnd) / 100;
-    const blendStart = photoArea.x + photoArea.w * blendStartPct;
-    const blendEnd = photoArea.x + photoArea.w * blendEndPct;
+    const blendCenter = photoArea.x + photoArea.w * (state.blendLocation / 100);
+    const tightBlendWidth = photoArea.w * 0.08;
+    const blendStart = blendCenter - tightBlendWidth / 2;
+    const blendEnd = blendCenter + tightBlendWidth / 2;
     const overlayMask = overlayCtx.createLinearGradient(blendStart, 0, blendEnd, 0);
     overlayMask.addColorStop(0, "rgba(0, 0, 0, 0)");
     overlayMask.addColorStop(1, "rgba(0, 0, 0, 1)");
@@ -336,8 +334,7 @@ function updateFromControls() {
     state.offsetX = Number(offsetXInput.value);
     state.offsetY = Number(offsetYInput.value);
   }
-  state.blendStart = Number(blendStartInput.value);
-  state.blendEnd = Number(blendEndInput.value);
+  state.blendLocation = Number(blendLocationInput.value);
   state.blendStrength = Number(blendStrengthInput.value);
   state.mono = monoInput.checked;
   state.markdown = markdownInput.checked;
@@ -358,8 +355,7 @@ function resetAdjustments() {
   offsetYInput.value = "0";
   state.offsetX2 = 0;
   state.offsetY2 = 0;
-  blendStartInput.value = "35";
-  blendEndInput.value = "65";
+  blendLocationInput.value = "50";
   blendStrengthInput.value = "100";
   updateFromControls();
 }
@@ -374,8 +370,7 @@ function resetSingleControl(controlId) {
     zoomInput: "1",
     offsetXInput: "0",
     offsetYInput: "0",
-    blendStartInput: "35",
-    blendEndInput: "65",
+    blendLocationInput: "50",
     blendStrengthInput: "100",
   };
   if (controlId === "offsetXInput") {
@@ -493,8 +488,7 @@ lineHeightInput.addEventListener("input", updateFromControls);
 zoomInput.addEventListener("input", updateFromControls);
 offsetXInput.addEventListener("input", updateFromControls);
 offsetYInput.addEventListener("input", updateFromControls);
-blendStartInput.addEventListener("input", updateFromControls);
-blendEndInput.addEventListener("input", updateFromControls);
+blendLocationInput.addEventListener("input", updateFromControls);
 blendStrengthInput.addEventListener("input", updateFromControls);
 monoInput.addEventListener("change", updateFromControls);
 markdownInput.addEventListener("change", updateFromControls);
