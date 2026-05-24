@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#050505"/>
+  <rect x="96" y="92" width="320" height="328" rx="12" fill="#f5f5f3"/>
+  <rect x="96" y="286" width="320" height="134" fill="#050505"/>
+  <rect x="124" y="246" width="264" height="122" rx="12" fill="#020202" stroke="#252525" stroke-width="4"/>
+  <text x="256" y="318" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#f7f7f7">TEXT</text>
+  <text x="256" y="390" text-anchor="middle" font-family="Arial Black, Impact, sans-serif" font-size="30" font-weight="900" fill="#f7f7f7">RAGE</text>
+  <text x="256" y="420" text-anchor="middle" font-family="Arial Black, Impact, sans-serif" font-size="30" font-weight="900" fill="#03f122">CTRL</text>
+</svg>
