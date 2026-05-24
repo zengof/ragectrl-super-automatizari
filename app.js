@@ -438,6 +438,18 @@ async function saveImage() {
   const filename = `rage-ctrl-${Date.now()}.png`;
   const dataUrl = canvas.toDataURL("image/png");
   triggerDownload(dataUrl, filename);
+
+  const blob = await exportBlob();
+  if (!blob) {
+    return;
+  }
+
+  if (blob) {
+    const objectUrl = URL.createObjectURL(blob);
+    triggerDownload(objectUrl, filename);
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
+    return;
+  }
 }
 
 async function shareImage() {
