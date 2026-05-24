@@ -259,3 +259,14 @@ input[type="range"] {
     font-size: 18px;
   }
 }
+
+
+select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-strong);
+  color: var(--text);
+  padding: 8px;
+  font-size: 16px;
+}

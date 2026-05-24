@@ -1,6 +1,6 @@
-# Rage CTRL Generator
+# RageCTRL Generator
 
-Mobile-first poster generator for the Rage CTRL image + Notes caption template.
+Mobile-first poster generator for the RageCTRL image + Notes caption template.
 
 ## Run locally
 
@@ -27,7 +27,7 @@ This repo is ready for GitHub Pages through `.github/workflows/pages.yml`.
 
 ```powershell
 git add .
-git commit -m "Initial Rage CTRL generator"
+git commit -m "Initial RageCTRL generator"
 git branch -M main
 git remote add origin https://github.com/YOUR-USER/YOUR-REPO.git
 git push -u origin main

@@ -306,6 +306,18 @@ function measureText(text) {
   return ctx.measureText(text).width;
 }
 
+function syncPositionControls() {
+  const isSecond = state.dualPhoto && state.activeImage === "image2";
+  offsetXInput.value = String(Math.round(isSecond ? state.offsetX2 : state.offsetX));
+  offsetYInput.value = String(Math.round(isSecond ? state.offsetY2 : state.offsetY));
+}
+
+function handleActiveImageChange() {
+  state.activeImage = activeImageInput.value;
+  syncPositionControls();
+  draw();
+}
+
 function updateFromControls() {
   state.caption = captionInput.value;
   state.textSize = Number(textSizeInput.value);
@@ -393,7 +405,7 @@ async function shareImage() {
   const file = new File([blob], "rage-ctrl.png", { type: "image/png" });
 
   if (navigator.canShare?.({ files: [file] })) {
-    await navigator.share({ files: [file], title: "Rage CTRL" });
+    await navigator.share({ files: [file], title: "RageCTRL" });
     return;
   }
 
@@ -424,10 +436,15 @@ function moveDrag(event) {
   const point = pointFromEvent(event);
   const dx = point.x - state.lastPoint.x;
   const dy = point.y - state.lastPoint.y;
-  state.offsetX = clamp(state.offsetX + dx, Number(offsetXInput.min), Number(offsetXInput.max));
-  state.offsetY = clamp(state.offsetY + dy, Number(offsetYInput.min), Number(offsetYInput.max));
-  offsetXInput.value = String(Math.round(state.offsetX));
-  offsetYInput.value = String(Math.round(state.offsetY));
+  const useSecond = state.dualPhoto && state.activeImage === "image2";
+  if (useSecond) {
+    state.offsetX2 = clamp(state.offsetX2 + dx, Number(offsetXInput.min), Number(offsetXInput.max));
+    state.offsetY2 = clamp(state.offsetY2 + dy, Number(offsetYInput.min), Number(offsetYInput.max));
+  } else {
+    state.offsetX = clamp(state.offsetX + dx, Number(offsetXInput.min), Number(offsetXInput.max));
+    state.offsetY = clamp(state.offsetY + dy, Number(offsetYInput.min), Number(offsetYInput.max));
+  }
+  syncPositionControls();
   state.lastPoint = point;
   draw();
 }
@@ -473,6 +490,8 @@ if (document.fonts) {
 }
 
 if (navigator.canShare) shareButton.disabled = false;
+
+syncPositionControls();
 
 if (window.PointerEvent) {
   canvas.addEventListener("pointerdown", startDrag);
