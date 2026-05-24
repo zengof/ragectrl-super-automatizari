@@ -436,26 +436,11 @@ function triggerDownload(url, filename) {
 
 async function saveImage() {
   const filename = `rage-ctrl-${Date.now()}.png`;
-  const blob = await exportBlob();
   const dataUrl = canvas.toDataURL("image/png");
+  triggerDownload(dataUrl, filename);
 
-  if ("showSaveFilePicker" in window && blob) {
-    try {
-      const handle = await window.showSaveFilePicker({
-        suggestedName: filename,
-        types: [{ description: "PNG image", accept: { "image/png": [".png"] } }],
-      });
-      const writable = await handle.createWritable();
-      await writable.write(blob);
-      await writable.close();
-      return;
-    } catch (error) {
-      if (error?.name !== "AbortError") console.error("File picker save failed:", error);
-    }
-  }
-
-  if (navigator.msSaveOrOpenBlob && blob) {
-    navigator.msSaveOrOpenBlob(blob, filename);
+  const blob = await exportBlob();
+  if (!blob) {
     return;
   }
 
@@ -465,8 +450,6 @@ async function saveImage() {
     setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
     return;
   }
-
-  triggerDownload(dataUrl, filename);
 }
 
 async function shareImage() {
